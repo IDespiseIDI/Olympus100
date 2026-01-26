@@ -1,0 +1,151 @@
+This is a list of the opcodes usable in the Olympus 100 CPU
+PROGRAM EXIT
+$00    quit program (shutdown) and return no error codes [QITZ]
+$01 XX    quit program and return error code XX (basically BSOD) [QITE]
+PROGRAM COUNTER OPERATIONS
+$02 XX YY    jump to address $XXYY (do not expect to return) [JMP]
+$03 XX YY    jump to subroutine $XXYY (expect to return, record current position in stack) [JSR]
+$04 XX YY    break from routine and jump to $XXYY (delete last address from stack) [ABA]
+$05    return from subroutine (jump to last stack address and remove) [RET]
+X REGISTER PRIMARY OPERATIONS
+$06 XX    set X to XX [SETX]
+$07 XX    set X to X+XX [ADDX]
+$08 XX    set X to X-XX [SUBX]
+$09 XX YY    write X to XXYY [WRTX]
+$0A XX YY    set X to number at address XXYY [REDX]
+$0B XX YY    skip the next 3 bytes of code if X is not equal to the number at address XXYY (typically followed by a jump to subroutine instruction) [CHXE]
+$0C XX YY    skip the next 3 bytes of code if X is less than the number at address XXYY (...) [CHXI]
+$0D    NOP for now, will fix later when I think of something [NOP]
+Y REGISTER PRIMARY OPERATIONS
+$0E XX    set Y to XX [SETY]
+$0F XX    set Y to Y+XX [ADDY]
+$10 XX    set Y to Y-XX [SUBY]
+$11 XX YY    write Y to XXYY [WRTY]
+$12 XX YY    set Y to number at address XXYY [REDY]
+$13 XX YY    skip the next 3 bytes of code if Y is not equal to the number at address XXYY (typically followed by a jump to subroutine instruction) [CHYE]
+$14 XX YY    skip the next 3 bytes of code if Y is less than the number at address XXYY (...) [CHYI]
+$15    NOP for now, will fix later when I think of something [NOP]
+A REGISTER PRIMARY OPERATIONS
+$16 XX    set A to XX [SETA]
+$17 XX    set A to A+XX [ADDA]
+$18 XX    set A to A-XX [SUBA]
+$19 XX YY    write A to XXYY [WRTA]
+$1A XX YY    set A to number at address XXYY [REDA]
+$1B XX YY    skip the next 3 bytes of code if A is not equal to the number at address XXYY (typically followed by a jump to subroutine instruction) [CHAE]
+$1C XX YY    skip the next 3 bytes of code if A is less than the number at address XXYY (...) [CHAI]
+$1D    NOP for now, will fix later when I think of something [NOP]
+INTER-REGISTER PRIMARY OPERATIONS
+$1E    set X to Y [XTOY]
+$1F    set X to A [XTOA]
+$20    set Y to A [YTOA]
+$21    skip the next 3 bytes of code if X is not equal to Y [XEQY]
+$22    skip the next 3 bytes of code if X is less than Y [XIQY]
+$23    skip the next 3 bytes of code if X is not equal to A [XEQA]
+$24    skip the next 3 bytes of code if X is less than A [XIQA]
+$25    skip the next 3 bytes of code if Y is not equal to A [YEQA]
+$26    skip the next 3 bytes of code if Y is less than A [YIQA]
+$27    swap X with Y [XSWY]
+$28    swap X with A [XSWA]
+$29    swap Y with A [YSWA]
+$2A    skip the next 3 bytes of code if Y is less than X [YIQX]
+$2B    skip the next 3 bytes of code if A is less than X [AIQX]
+$2C    skip the next 3 bytes of code if A is less than Y [AIQY]
+$2D    [NOP]
+PRIMARY INPUT
+$2E    halt execution until user input [WAIT]
+$2F    set X to length of user input [UTLX]
+$30    set Y to length of user input [UTLY]
+$31    set A to length of user input [UTLA]
+$32 XX YY   set ram values beginning with XXYY and going for length X to user input. [RDLX]
+$33 XX YY   set ram values beginning with XXYY and going for length Y to user input. [RDLY]
+$34 XX YY   set ram values beginning with XXYY and going for length A to user input. [RDLA]
+$35    NOP
+PRIMARY OUTPUT
+$36 XX YY    print a string X characters long beginning with address XXYY [PRTX]
+$37 XX YY    print a string Y characters long beginning with address XXYY [PRTY]
+$38 XX YY    print a string A characters long beginning with address XXYY [PRTA]
+$39    print a carrage return [PRTB]
+DISK A MANAGEMENT
+$3A XX    load disk a bank XX into ROM section 1 [DAL1]
+$3B XX    load disk a bank XX into ROM section 2 [DAL2]
+$3C XX    load disk a bank XX into ROM section 3 [DAL3]
+$3D XX    load disk a bank XX into ROM section 4 [DAL4]
+DISK B MANAGEMENT
+$3E XX    load disk b bank XX into RAW section 1 (Read And Write. Loses unsaved changes of overwritten bank) [DBL1]
+$3F XX    load disk b bank XX into RAW section 2 [DBL2]
+$40 XX    save RAW section 1 into disk b bank XX [DBS1]
+$41 XX    save RAW section 2 into disk b bank XX [DBS2]
+INTERMEDIATE PROGRAM OPERATIONS
+$42 XX YY    dump 256 bytes of RAM beginning at address XXYY [DMPM]
+$43    dump the last 256 bytes of instructions (literally just goes back 256 bytes and prints all instructions until that point) [DMPI]
+$44    dump the stack [DMPS]
+$45    dump the registers, stack pointer and program counter [DMPV]
+STACK OPERATIONS
+$46 XX YY    add XXYY to the top of the stack [ADDS]
+$47 XX    set the stack pointer to XX [SETS]
+$48 XX YY    set stack position X to XXYY [SXIN]
+$49 XX YY    set stack position Y to XXYY [SYIN]
+$4A XX YY    set stack position A to XXYY [SAIN]
+$4B    set stack pointer to X [STKX]
+$4C    set stack pointer to Y [STKY]
+$4D    set stack pointer to A [STKA]
+X REGISTER INTERMEDIATE OPERATIONS
+$4E    increment X [ICRX]
+$4F    decrement X [DCRX]
+$50 XX YY    increase X by the number at XXYY [INCX]
+$51 XX YY    decrease X by the number at XXYY [DECX]
+Y REGISTER INTERMEDIATE OPERATIONS
+$52    increment Y [ICRY]
+$53    decrement Y [DCRY]
+$54 XX YY    increase Y by the number at XXYY [INCY]
+$55 XX YY    decrease Y by the number at XXYY [DECY]
+A REGISTER INTERMEDIATE OPERATIONS
+$56    increment A [ICRA]
+$57    decrement A [DCRA]
+$58 XX YY    increase A by the number at XXYY [INCA]
+$59 XX YY    decrease A by the number at XXYY [DECA]
+INTER-REGISTER INTERMEDIATE OPERATIONS
+$5A    increase X by Y [XADY]
+$5B    increase X by A [XADA]
+$5C    increase Y by X [YADX]
+$5D    increase Y by A [YADA]
+$5E    increase A by X [AADX]
+$5F    increase A by Y [AADY]
+$60    decrease X by Y [XSBY]
+$61    decrease X by A [XSBA]
+$62    decrease Y by X [YSBX]
+$63    decrease Y by A [YSBA]
+$64    decrease A by X [ASBX]
+$65    decrease A by Y [ASBY]
+$66    set all registers equal to X [ALLX]
+$67    set all registers equal to Y [ALLY]
+$68    set all registers equal to A [ALLA]
+$69    NOP
+INTERMEDIATE INPUT OPERATIONS
+$6A XX    halt execution, prompt for user input, set X to length of user input, cap X to XX [IPCX]
+$6B XX    halt execution, prompt for user input, set Y to length of user input, cap Y to XX [IPCY]
+$6C XX    halt execution, prompt for user input, set A to length of user input, cap A to XX [IPCA]
+$6D    NOP
+INTERMEDIATE OUTPUT OPERATIONS
+$6E XX YY    print a string X characters long beginning with address XXYY on a new line [NLXS]
+$6F XX YY    print a string Y characters long beginning with address XXYY on a new line [NLYS]
+$70 XX YY    print a string A characters long beginning with address XXYY on a new line [NLAS]
+$71    NOP
+INTERMEDIATE DISK A OPERATIONS
+$72 XX    load disk a bank XX into ROM section 1 and bank XX+1 into section 2 [SDL1]
+$73 XX    load disk a bank XX into ROM section 2 and bank XX+1 into section 3 [SDL2]
+$74 XX    load disk a bank XX into ROM section 3 and bank XX+1 into section 4 [SDL3]
+$75    NOP
+INTERMEDIATE DISK B OPERATIONS
+$76 XX    load disk b bank XX into RAW section 1 and bank XX+1 into section 2 [SDLB]
+$77 XX    save both sections of RAW to disk b index XX and XX+1 [SDSB]
+ADVANCED PROGRAM OPERATIONS
+$78    dump which sectors of disk a are loaded [DMPA]
+$79    dump which sectors of disk b are loaded [DMPB]
+$7A XX   jump XX forward [JMPF]
+$7B XX   jump XX backward [JMPB] (these two opcodes encourage very bad programming habits. You've been warned.)
+FUTURE OPCODE IDEAS
+compare registers to a number given in the arguments
+
+
+

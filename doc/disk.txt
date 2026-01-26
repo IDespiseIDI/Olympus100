@@ -1,0 +1,10 @@
+This is documentation relating to disk management.
+enter paths to the disks as command line arguments
+All olympus virtual floppy disks are read by the olympus 100 as either program disks, or data disks.
+Program disks MUST be inserted into slot a.
+You may copy a data disk by inserting the disk you wish to copy from into slot a and the disk you wish to copy to into slot b
+Disks are inserted into slot b as read/write, and slot a as read only.
+Disks are 128 Kibibytes in size.
+Disks are divided into 16 sectors of 8 kibibytes.
+Sectors of disk a are loaded 4 at a time beginning at RAM address $8000
+Sectors of disk b are loaded 2 at a time beginning at RAM address $4000
