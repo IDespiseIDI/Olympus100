@@ -611,6 +611,46 @@ void JMPB(m1op) {
     pcounter -= hb;
     return;
 }
+void CXEN(m1op) {
+    if (xreg != hb) {
+        pcounter += 3;
+    }
+    return;
+}
+void CXIN(m1op) {
+    if (xreg < hb) {
+        pcounter += 3;
+    }
+    return;
+}
+void CYEN(m1op) {
+    if (yreg != hb) {
+        pcounter += 3;
+    }
+    return;
+}
+void CYIN(m1op) {
+    if (yreg < hb) {
+        pcounter += 3;
+    }
+    return;
+}
+void CAEN(m1op) {
+    if (areg != hb) {
+        pcounter += 3;
+    }
+    return;
+}
+void CAIN(m1op) {
+    if (areg < hb) {
+        pcounter += 3;
+    }
+    return;
+}
+void PRTN(m1op) {
+    std::cout << (int)hb;
+    return;
+}
 void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
 #ifdef TRACE  
     std::cout << "REGDEB: " << (int)xreg << " " << (int)yreg << " " << (int)areg << std::endl;
@@ -1083,6 +1123,30 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             break;
         case 123:
             JMPB(arg1);
+            break;
+        case 124:
+            CXEN(arg1);
+            pcounter +=2;
+            break;
+        case 125:
+            CXIN(arg1);
+            pcounter +=2;
+            break;
+        case 126:
+            CYEN(arg1);
+            pcounter +=2;
+            break;
+        case 127:
+            CYIN(arg1);
+            pcounter +=2;
+            break;
+        case 128:
+            CAEN(arg1);
+            pcounter +=2;
+            break;
+        case 129:
+            CAIN(arg1);
+            pcounter +=2;
             break;
         default:
             NOP();

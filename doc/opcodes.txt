@@ -144,8 +144,17 @@ $78    dump which sectors of disk a are loaded [DMPA]
 $79    dump which sectors of disk b are loaded [DMPB]
 $7A XX   jump XX forward [JMPF]
 $7B XX   jump XX backward [JMPB] (these two opcodes encourage very bad programming habits. You've been warned.)
+NUMBER AS POINTER OPCODES
+$7C XX    skip the next 3 bytes of code if X is not equal to XX (typically followed by a jump to subroutine instruction) [CXEN]
+$7D XX    skip the next 3 bytes of code if X is less than XX (...) [CXIN]
+$7E XX    skip the next 3 bytes of code if Y is not equal to XX (typically followed by a jump to subroutine instruction) [CYEN]
+$7F XX    skip the next 3 bytes of code if Y is less than XX (...) [CYIN]
+$80 XX    skip the next 3 bytes of code if A is not equal to XX (typically followed by a jump to subroutine instruction) [CAEN]
+$81 XX    skip the next 3 bytes of code if A is less than XX (...) [CAIN]
+$82 XX    print XX as a number [PRTN]
+$83    NOP
+
 FUTURE OPCODE IDEAS
-compare registers to a number given in the arguments
 
 
 
