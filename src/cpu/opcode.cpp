@@ -67,10 +67,7 @@ void SUBX(m1op) {
     return;
 }
 void WRTX(m2op) {
-    if (m16 < 32768) {
-        memory[m16] = xreg;
-    }
-    return;
+    memory[m16] = xreg;
 }
 void REDX(m2op) {
     xreg = memory[m16];
@@ -101,9 +98,7 @@ void SUBY(m1op) {
     return;
 }
 void WRTY(m2op) {
-    if (m16 < 32768) {
-        memory[m16] = yreg;
-    }
+    memory[m16] = yreg;
     return;
 }
 void REDY(m2op) {
@@ -135,9 +130,7 @@ void SUBA(m1op) {
     return;
 }
 void WRTA(m2op) {
-    if (m16 < 32768) {
-        memory[m16] = areg;
-    }
+    memory[m16] = areg;
     return;
 }
 void REDA(m2op) {
