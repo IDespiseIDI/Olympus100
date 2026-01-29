@@ -64,7 +64,7 @@ PRIMARY OUTPUT
 $36 XX YY    print a string X characters long beginning with address XXYY [PRTX]
 $37 XX YY    print a string Y characters long beginning with address XXYY [PRTY]
 $38 XX YY    print a string A characters long beginning with address XXYY [PRTA]
-$39    print a carrage return [PRTB]
+$39    print a carriage return [PRTB]
 DISK A MANAGEMENT
 $3A XX    load disk a bank XX into ROM section 1 [DAL1]
 $3B XX    load disk a bank XX into ROM section 2 [DAL2]
