@@ -14,11 +14,13 @@ but after implementing them in the switch statement*/
 uint8_t xreg; //X register
 uint8_t yreg; //Y register
 uint8_t areg; //A register
+uint8_t *lreg; //Loaded register
 uint16_t stack[256]; //stack
 uint16_t pcounter; //program counter
 uint8_t stackpointer; 
-uint8_t das[4];
-uint8_t dbs[2];
+uint8_t das[4]; //disk a sectors loaded
+uint8_t dbs[2]; //disk b sectors loaded
+uint16_t dp = 0; //data pointer
 // #define TRACE
 void NOP() {
     return;
@@ -33,10 +35,12 @@ void QITE(m1op) {
     return;
 }
 void JMP(m2op) {
+//    std::cout << "JMP to " << (int)hb * 256 + (int)lb << " is " << (int)memory[hb*256 + lb] << std::endl;
     pcounter = (hb * 256) + lb;
     return;
 }
 void JSR(m2op) {
+//    std::cout << "JSR to " << (int)hb * 256 + (int)lb << " is " << (int)memory[hb*256 + lb] << std::endl;
     stack[stackpointer] = pcounter + 3;
     stackpointer++;
     pcounter = (hb * 256) + lb;
@@ -85,6 +89,10 @@ void CHXI(m2op) {
     }
     return;
 }
+void LODX() {
+    lreg = &xreg;
+    return;
+}
 void SETY(m1op) {
     yreg = hb;
     return;
@@ -117,6 +125,10 @@ void CHYI(m2op) {
     }
     return;
 }
+void LODY() {
+    lreg = &yreg;
+    return;
+}
 void SETA(m1op) {
     areg = hb;
     return;
@@ -147,6 +159,10 @@ void CHAI(m2op) {
     if(areg < memory[m16]) {
         pcounter += 3;
     }
+    return;
+}
+void LODA() {
+    lreg = &areg;
     return;
 }
 void XTOY() {
@@ -577,7 +593,10 @@ void SDLB(m1op) {
     return;
 }
 void SDSB(m1op) {
-    if (hb > 14) return;
+    if (hb > 14) {
+         return;
+    }
+//    std::cout << "wrote to disk B" << std::endl;
     diskb.seekp(hb * 8192, std::ios::beg);
     diskb.write(reinterpret_cast<const char*>(&memory[16384]), 16384);
     diskb.flush();
@@ -644,9 +663,198 @@ void PRTN(m1op) {
     std::cout << (int)hb;
     return;
 }
-void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
-#ifdef TRACE  
-    std::cout << "REGDEB: " << (int)xreg << " " << (int)yreg << " " << (int)areg << std::endl;
+void ICRD() {
+    dp++;
+    return;
+}
+void DCRD() {
+    dp--;
+    return;
+}
+void INCD(m1op) {
+    dp += hb;
+    return;
+}
+void DECD(m1op) {
+    dp -= hb;
+    return;
+}
+void SETD(m2op) {
+    dp = 256 * (uint16_t)hb + (uint16_t)lb;
+    return;
+}
+void ZERD() {
+    dp = 0;
+    return;
+}
+void ICDX() {
+    dp += xreg;
+    return;
+}
+void DCDX() {
+    dp -= xreg;
+    return;
+}
+void ICDY() {
+    dp += yreg;
+    return;
+}
+void DCDY() {
+    dp -= yreg;
+    return;
+}
+void ICDA() {
+    dp += areg;
+    return;
+}
+void DCDA() {
+    dp -= areg;
+    return;
+}
+void ICDL() {
+    dp += *lreg;
+}
+void DCDL() {
+    dp += *lreg;
+}
+void DSXX() {
+    dp = 256 * (uint16_t)xreg + (uint16_t)xreg;
+    return;
+}
+void DSXY() {
+    dp = 256 * (uint16_t)xreg + (uint16_t)yreg;
+    return;
+}
+void DSXA() {
+    dp = 256 * (uint16_t)xreg + (uint16_t)areg;
+    return;
+}
+void DSXL() {
+    dp = 256 * (uint16_t)xreg + (uint16_t)*lreg;
+    return;
+}
+void DSYX() {
+    dp = 256 * (uint16_t)yreg + (uint16_t)xreg;
+    return;
+}
+void DSYY() {
+    dp = 256 * (uint16_t)yreg + (uint16_t)yreg;
+    return;
+}
+void DSYA() {
+    dp = 256 * (uint16_t)yreg + (uint16_t)areg;
+    return;
+}
+void DSYL() {
+    dp = 256 * (uint16_t)yreg + (uint16_t)*lreg;
+    return;
+}
+void DSAX() {
+    dp = 256 * (uint16_t)areg + (uint16_t)xreg;
+    return;
+}
+void DSAY() {
+    dp = 256 * (uint16_t)areg + (uint16_t)yreg;
+    return;
+}
+void DSAA() {
+    dp = 256 * (uint16_t)areg + (uint16_t)areg;
+    return;
+}
+void DSAL() {
+    dp = 256 * (uint16_t)areg + (uint16_t)*lreg;
+    return;
+}
+void DSLX() {
+    dp = 256 * (uint16_t)*lreg + (uint16_t)xreg;
+    return;
+}
+void DSLY() {
+    dp = 256 * (uint16_t)*lreg + (uint16_t)yreg;
+    return;
+}
+void DSLA() {
+    dp = 256 * (uint16_t)*lreg + (uint16_t)areg;
+    return;
+}
+void DSLL() {
+    dp = 256 * (uint16_t)*lreg + (uint16_t)*lreg;
+    return;
+}
+void DTOX() {
+    memory[dp] = xreg;
+    return;
+}
+void XTOD() {
+    xreg = memory[dp];
+    return;
+}
+void DTOY() {
+    memory[dp] = yreg;
+    return;
+}
+void YTOD() {
+    yreg = memory[dp];
+    return;
+}
+void DTOA() {
+    memory[dp] = areg;
+    return;
+}
+void ATOD() {
+    areg = memory[dp];
+    return;
+}
+void DTOL() {
+    memory[dp] = *lreg;
+    return;
+}
+void LTOD() {
+    *lreg = memory[dp];
+    return;
+}
+void DTSV(m1op) {
+    memory[dp] = hb;
+    return;
+}
+void DTSZ() {
+    memory[dp] = 0;
+    return;
+}
+void SETL(m1op) {
+    *lreg = hb;
+    return;
+}
+void ADDL(m1op) {
+    *lreg += hb;
+    return;
+}
+void SUBL(m1op) {
+    *lreg -= hb;
+    return;
+}
+void WRTL(m2op) {
+    memory[m16] = *lreg;
+}
+void REDL(m2op) {
+    *lreg = memory[m16];
+    return;
+}
+void CHLE(m2op) {
+    if(*lreg != memory[m16]) {
+        pcounter += 3;
+    }
+    return;
+}
+void CHLI(m2op) {
+    if(*lreg < memory[m16]) {
+        pcounter += 3;
+    }
+    return;
+}
+void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) { 
+#ifdef TRACE
+    std::cout << "REGDEB: " << (int)xreg << " " << (int)yreg << " " << (int)areg << std::endl; 
     std::cout << "DISKA: ";
     for (int i = 0; i < 8; i++) {
         std::cout << (int)memory[32768 + i] << " ";
@@ -711,6 +919,10 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             CHXI(arg1, arg2);
             pcounter += 3;
             break;
+        case 13:
+            LODX();
+            pcounter++;
+            break;
         case 14:
             SETY(arg1);
             pcounter += 2;
@@ -739,6 +951,10 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             CHYI(arg1, arg2);
             pcounter += 3;
             break;
+        case 21:
+            LODY();
+            pcounter++;
+            break;
         case 22:
             SETA(arg1);
             pcounter += 2;
@@ -766,6 +982,10 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
         case 28:
             CHAI(arg1, arg2);
             pcounter += 3;
+            break;
+        case 29:
+            LODA();
+            pcounter++;
             break;
         case 30:
             XTOY();
@@ -1140,6 +1360,198 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
         case 129:
             CAIN(arg1);
             pcounter +=2;
+            break;
+        case 130:
+            PRTN(arg1);
+            pcounter += 2;
+            break;
+        case 132:
+            ICRD();
+            pcounter++;
+            break;
+        case 133:
+            DCRD();
+            pcounter++;
+            break;
+        case 134:
+            INCD(arg1);
+            pcounter += 2;
+            break;
+        case 135:
+            DECD(arg1);
+            pcounter += 2;
+            break;
+        case 136:
+            SETD(arg1, arg2);
+            pcounter += 3;
+            break;
+        case 137:
+            ZERD();
+            pcounter++;
+            break;
+        case 138:
+            ICDX();
+            pcounter++;
+            break;
+        case 139:
+            DCDX();
+            pcounter++;
+            break;
+        case 140:
+            ICDY();
+            pcounter++;
+            break;
+        case 141:
+            DCDY();
+            pcounter++;
+            break;
+        case 142:
+            ICDA();
+            pcounter++;
+            break;
+        case 143:
+            DCDA();
+            pcounter++;
+            break;
+        case 144:
+            ICDL();
+            pcounter++;
+            break;
+        case 145:
+            DCDL();
+            pcounter++;
+            break;
+        case 146:
+            DSXX();
+            pcounter++;
+            break;
+        case 147:
+            DSXY();
+            pcounter++;
+            break;
+        case 148:
+            DSXA();
+            pcounter++;
+            break;
+        case 149:
+            DSXL();
+            pcounter++;
+            break;
+        case 150:
+            DSYX();
+            pcounter++;
+            break;
+        case 151:
+            DSYY();
+            pcounter++;
+            break;
+        case 152:
+            DSYA();
+            pcounter++;
+            break;
+        case 153:
+            DSYL();
+            pcounter++;
+            break;
+        case 154:
+            DSAX();
+            pcounter++;
+            break;
+        case 155:
+            DSAY();
+            pcounter++;
+            break;
+        case 156:
+            DSAA();
+            pcounter++;
+            break;
+        case 157:
+            DSAL();
+            pcounter++;
+            break;
+        case 158:
+            DSLX();
+            pcounter++;
+            break;
+        case 159:
+            DSLY();
+            pcounter++;
+            break;
+        case 160:
+            DSLA();
+            pcounter++;
+            break;
+        case 161:
+            DSLL();
+            pcounter++;
+            break;
+        case 162:
+            DTOX();
+            pcounter++;
+            break;
+        case 163:
+            XTOD();
+            pcounter++;
+            break;
+        case 164:
+            DTOY();
+            pcounter++;
+            break;
+        case 165:
+            YTOD();
+            pcounter++;
+            break;
+        case 166:
+            DTOA();
+            pcounter++;
+            break;
+        case 167:
+            ATOD();
+            pcounter++;
+            break;
+        case 168:
+            DTOL();
+            pcounter++;
+            break;
+        case 169:
+            LTOD();
+            pcounter++;
+            break;
+        case 170:
+            DTSV(arg1);
+            pcounter += 2;
+            break;
+        case 171:
+            DTSZ();
+            pcounter++;
+            break;
+        case 172:
+            SETL(arg1);
+            pcounter += 2;
+            break;
+        case 173:
+            ADDL(arg1);
+            pcounter += 2;
+            break;
+        case 174:
+            SUBL(arg1);
+            pcounter += 2;
+            break;
+        case 175:
+            WRTL(arg1, arg2);
+            pcounter += 3;
+            break;
+        case 176:
+            REDL(arg1, arg2);
+            pcounter += 3;
+            break;
+        case 177:
+            CHLE(arg1, arg2);
+            pcounter += 3;
+            break;
+        case 178:
+            CHLI(arg1, arg2);
+            pcounter += 3;
             break;
         default:
             NOP();

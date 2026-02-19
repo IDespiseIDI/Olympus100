@@ -15,7 +15,7 @@ $09 XX YY    write X to XXYY [WRTX]
 $0A XX YY    set X to number at address XXYY [REDX]
 $0B XX YY    skip the next 3 bytes of code if X is not equal to the number at address XXYY (typically followed by a jump to subroutine instruction) [CHXE]
 $0C XX YY    skip the next 3 bytes of code if X is less than the number at address XXYY (...) [CHXI]
-$0D    NOP for now, will fix later when I think of something [NOP]
+$0D    make X the loaded register [LODX]
 Y REGISTER PRIMARY OPERATIONS
 $0E XX    set Y to XX [SETY]
 $0F XX    set Y to Y+XX [ADDY]
@@ -24,7 +24,7 @@ $11 XX YY    write Y to XXYY [WRTY]
 $12 XX YY    set Y to number at address XXYY [REDY]
 $13 XX YY    skip the next 3 bytes of code if Y is not equal to the number at address XXYY (typically followed by a jump to subroutine instruction) [CHYE]
 $14 XX YY    skip the next 3 bytes of code if Y is less than the number at address XXYY (...) [CHYI]
-$15    NOP for now, will fix later when I think of something [NOP]
+$15    make Y the loaded register [LODY]
 A REGISTER PRIMARY OPERATIONS
 $16 XX    set A to XX [SETA]
 $17 XX    set A to A+XX [ADDA]
@@ -33,7 +33,7 @@ $19 XX YY    write A to XXYY [WRTA]
 $1A XX YY    set A to number at address XXYY [REDA]
 $1B XX YY    skip the next 3 bytes of code if A is not equal to the number at address XXYY (typically followed by a jump to subroutine instruction) [CHAE]
 $1C XX YY    skip the next 3 bytes of code if A is less than the number at address XXYY (...) [CHAI]
-$1D    NOP for now, will fix later when I think of something [NOP]
+$1D    make A the loaded register [LODA]
 INTER-REGISTER PRIMARY OPERATIONS
 $1E    set X to Y [XTOY]
 $1F    set X to A [XTOA]
@@ -153,8 +153,60 @@ $80 XX    skip the next 3 bytes of code if A is not equal to XX (typically follo
 $81 XX    skip the next 3 bytes of code if A is less than XX (...) [CAIN]
 $82 XX    print XX as a number [PRTN]
 $83    NOP
-
-FUTURE OPCODE IDEAS
-
-
+DATA POINTER ADDRESS INC/DEC OPCODES
+$84    increment data pointer [ICRD]
+$85    decrement data pointer [DCRD]
+$86 XX    increase data pointer by XX [INCD]
+$87 XX    decrease data pointer by XX [DECD]
+DATA POINTER ADDRESS CONSTANT OPCODES
+$88 XX YY    set data pointer to XXYY [SETD]
+$89    set data pointer to $0000 [ZERD]
+DATA POINTER ADDRESS SINGLE REGISTER OPCODES
+$8A    increase data pointer by X [ICDX]
+$8B    decrease data pointer by X [DCDX]
+$8C    increase data pointer by Y [ICDY]
+$8D    decrease data pointer by Y [DCDY]
+$8E    increase data pointer by A [ICDA]
+$8F    decrease data pointer by A [DCDA]
+$90    increase data pointer by loaded register [ICDL]
+$91    decrease data pointer by loaded register [DCDL]
+DATA POINTER ADDRESS DOUBLE REGISTER OPCODES
+DSBC    set data pointer to high byte B, low byte C
+$92 [DSXX]
+$93 [DSXY]
+$94 [DSXA]
+$95 [DSXL]
+$96 [DSYX]
+$97 [DSYY]
+$98 [DSYA]
+$99 [DSYL]
+$9A [DSAX]
+$9B [DSAY]
+$9C [DSAA]
+$9D [DSAL]
+$9E [DSLX]
+$9F [DSLY]
+$A0 [DSLA]
+$A1 [DSLL]
+DATA POINTER TARGET REGISTER OPERATIONS
+$A2    write X to data pointer target [DTOX]
+$A3    set X to value at data pointer [XTOD]
+$A4    write Y to data pointer target [DTOY]
+$A5    set Y to value at data pointer [YTOD]
+$A6    write A to data pointer target [DTOA]
+$A7    set A to value at data pointer [ATOD]
+$A8    write loaded register to data pointer [DTOL]
+$A9    set loaded register to value at data pointer [LTOD]
+DATA POINTER TARGET VALUE OPERATIONS
+$AA XX    set data pointer target to XX [DTSV]
+$AB    set data pointer target to 0 [DTSZ]
+LOADED REGISTER PRIMARY OPERATIONS
+$AC XX    set the loaded register to XX [SETL]
+$AD XX    increase the loaded register by XX [ADDL]
+$AE XX    decrease the loaded register by XX [SUBL]
+$AF XX YY    write the loaded register to XXYY [WRTL]
+$B0 XX YY    set the loaded register to number at address XXYY [REDL]
+$B1 XX YY    skip the next 3 bytes of code if the loaded register is not equal to the number at address XXYY (typically followed by a jump to subroutine instruction) [CHLE]
+$B2 XX YY    skip the next 3 bytes of code if the loaded register is less than the number at address XXYY (...) [CHLI]
+$B3    NOP
 
