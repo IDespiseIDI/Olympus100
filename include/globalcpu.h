@@ -1,7 +1,6 @@
 #pragma once
-#include <string>
 #include <stdint.h>
-#include <fstream>
+#include <stdio.h>
 /*this is for declaring cpu functions used across the entire program*/
 extern uint8_t xreg; //X register
 extern uint8_t yreg; //Y register
@@ -12,4 +11,4 @@ extern uint8_t stackpointer; //stack pointer doesn't need to be anything greater
 extern uint16_t dp;
 extern uint8_t *lreg;
 void opcode(uint8_t code, uint8_t arg1, uint8_t arg2);
-extern bool quit;
+extern int quit;

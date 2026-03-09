@@ -3,52 +3,33 @@
 #include "globalram.h"
 #include "globalui.h"
 #include "globaldisk.h"
-#include <iostream>
-#include <fstream>
-/*macros I thought of while programing the opcodes, 
-but after implementing them in the switch statement*/
-#define m2op int hb, int lb
-#define m1op int hb
-#define mcs stack[stackpointer]
-#define m16 (hb * 256) + lb
-uint8_t xreg; //X register
-uint8_t yreg; //Y register
-uint8_t areg; //A register
-uint8_t *lreg; //Loaded register
-uint16_t stack[256]; //stack
-uint16_t pcounter; //program counter
-uint8_t stackpointer; 
-uint8_t das[4]; //disk a sectors loaded
-uint8_t dbs[2]; //disk b sectors loaded
-uint16_t dp = 0; //data pointer
+#include <stdio.h>
 // #define TRACE
 void NOP() {
     return;
 }
 void QITZ() {
-    quit = true;
+    quit = 1;
     return;
 }
 void QITE(m1op) {
-    std::cout << "An unhandled exception has occured." << std::endl << "Error: " << (int)hb << std::endl;
-    quit = true;
+    printf("\nAn unhandled exception has occured. \n Error: %i \n", hb);
+    quit = 1;
     return;
 }
 void JMP(m2op) {
-//    std::cout << "JMP to " << (int)hb * 256 + (int)lb << " is " << (int)memory[hb*256 + lb] << std::endl;
     pcounter = (hb * 256) + lb;
     return;
 }
 void JSR(m2op) {
-//    std::cout << "JSR to " << (int)hb * 256 + (int)lb << " is " << (int)memory[hb*256 + lb] << std::endl;
-    stack[stackpointer] = pcounter + 3;
+    mcs = pcounter + 3;
     stackpointer++;
     pcounter = (hb * 256) + lb;
     return;
 }
 void ABA(m2op) {
     stackpointer--;
-    stack[stackpointer] = 0;
+    mcs = 0;
     pcounter = (hb * 256) + lb;
     return;
 }
@@ -253,17 +234,27 @@ void AIQY() {
     return;
 }
 void WAIT() {
-    std::cin >> strin;
+    memset(strin, 0, 1);
+    fgets(strin, 255, stdin);
     return;
 }
 void UTLX() {
-    xreg = strin.length();
+    for (xreg = 0; strin[xreg] != NULL; xreg++) { //this is okay, right?
+
+    }
+    return;
 }
 void UTLY() {
-    yreg = strin.length();
+    for (yreg = 0; strin[xreg] != NULL; xreg++) {
+
+    }
+    return;
 }
 void UTLA() {
-    areg = strin.length();
+    for (areg = 0; strin[xreg] != NULL; xreg++) {
+
+    }
+    return;
 }
 void RDLX(m2op) {
     for(uint8_t i=0; i < xreg; i++) {
@@ -285,99 +276,100 @@ void RDLA(m2op) {
 }
 void PRTX(m2op) {
     for(uint8_t i=0; i < xreg; i++) {
-        std::cout << (char)memory[m16 + i];
+        printf("%c", memory[m16 + i]);
     }
     return;
 }
 void PRTY(m2op) {
     for(uint8_t i=0; i < yreg; i++) {
-        std::cout << (char)memory[m16 + i];
+        printf("%c", memory[m16 + i]);
     }
     return;
 }
 void PRTA(m2op) {
     for(uint8_t i=0; i < areg; i++) {
-        std::cout << (char)memory[m16 + i];
+        printf("%c", memory[m16 + i]);
     }
     return;
 }
 void PRTB() {
-    std::cout << std::endl;
+    printf("\n");
     return;
 }
 void DAL1(m1op) {
-    diska.seekg((int)hb * 8192, std::ios::beg);
-    diska.read(reinterpret_cast<char*>(&memory[32768]), 8192);
+    fseek(diska, (int)hb * 8192, SEEK_SET);
+    fread(&memory[32768], sizeof(uint8_t), 8192 * sizeof(uint8_t), diska);
     das[0] = hb;
     return;
 }
 void DAL2(m1op) {
-    diska.seekg((int)hb * 8192, std::ios::beg);
-    diska.read(reinterpret_cast<char*>(&memory[40960]), 8192);
+    fseek(diska, (int)hb * 8192, SEEK_SET);
+    fread(&memory[40960], sizeof(uint8_t), 8192 * sizeof(uint8_t), diska);
     das[1] = hb;
     return;
 }
 void DAL3(m1op) {
-    diska.seekg((int)hb * 8192, std::ios::beg);
-    diska.read(reinterpret_cast<char*>(&memory[49152]), 8192);
+    fseek(diska, (int)hb * 8192, SEEK_SET);
+    fread(&memory[49152], sizeof(uint8_t), 8192 * sizeof(uint8_t), diska);
     das[2] = hb;
     return;
 }
 void DAL4(m1op) {
-    diska.seekg((int)hb * 8192, std::ios::beg);
-    diska.read(reinterpret_cast<char*>(&memory[57344]), 8192);
+    fseek(diska, (int)hb * 8192, SEEK_SET);
+    fread(&memory[57344], sizeof(uint8_t), 8192 * sizeof(uint8_t), diska);
     das[3] = hb;
     return;
 }
 void DBL1(m1op) {
-    diskb.seekg((int)hb * 8192, std::ios::beg);
-    diskb.read(reinterpret_cast<char*>(&memory[16384]), 8192);
+    fseek(diskb, (int)hb * 8192, SEEK_SET);
+    fread(&memory[16384], sizeof(uint8_t), 8192 * sizeof(uint8_t), diskb);
     dbs[0] = hb;
     return;
 }
 void DBL2(m1op) {
-    diskb.seekg((int)hb * 8192, std::ios::beg);
-    diskb.read(reinterpret_cast<char*>(&memory[24576]), 8192);
+    fseek(diskb, (int)hb * 8192, SEEK_SET);
+    fread(&memory[24576], sizeof(uint8_t), 8192 * sizeof(uint8_t), diskb);
     dbs[1] = hb;
     return;
 }
 void DBS1(m1op) {
     if (hb > 15) return;
-    diskb.seekp(hb * 8192, std::ios::beg);
-    diskb.write(reinterpret_cast<const char*>(&memory[16384]), 8192);
-    diskb.flush();
+    fseek(diskb, (int)hb * 8192, SEEK_SET);
+    fwrite(memory + 16384, 1, 8192, diskb);
+    fflush(diskb);
     return;
 }
 void DBS2(m1op) {
     if (hb > 15) return;
-    diskb.seekp(hb * 8192, std::ios::beg);
-    diskb.write(reinterpret_cast<const char*>(&memory[24576]), 8192);
-    diskb.flush();
+    fseek(diskb, (int)hb * 8192, SEEK_SET);
+    fwrite(memory + 24576, 1, 8192, diskb);
+    fflush(diskb);
     return;
 }
 void DMPM(m2op) {
     for (int i = 0; i < 256; i++) {
-        std::cout << memory[m16 + i];
+        printf("%i", memory[m16 + i]);
     }
-    std::cout << std::endl;
+    printf("\n");
     return;
 }
 void DMPI() {
     for (int i = 0; i < 256; i++) {
-        std::cout << (int)memory[pcounter - 256 + i] << " ";
+        printf("%i", memory[pcounter - 256 + i]);
     }
-    std::cout << std::endl;
+    printf("\n");
     return;
 }
 void DMPS() {
     for (int i = 0; i < 256; i++) {
-        std::cout << stack[i];
+        printf("%i", stack[i]);
     }
-    std::cout << std::endl;
+    printf("\n");
     return;
 }
 void DMPV() {
-    std::cout << xreg << yreg << areg << stackpointer << pcounter << std::endl;
+    printf("%i %i %i %i %i %i", xreg, yreg, areg, *lreg, stackpointer, pcounter);
+    printf("\n");
     return;
 }
 void ADDS(m2op) {
@@ -525,94 +517,94 @@ void ALLA() {
     return;
 }
 void IPCX(m1op) {
-    std::cin >> strin;
-    xreg = strin.length();
+    fgets(strin, 255, stdin);
+    for (xreg = 0; strin[xreg] != NULL; xreg++) {
+
+    }
     if (xreg > hb) {
         xreg = hb;
     }
     return;
 }
 void IPCY(m1op) {
-    std::cin >> strin;
-    yreg = strin.length();
+    fgets(strin, 255, stdin);
+    for (yreg = 0; strin[xreg] != NULL; xreg++) {
+
+    }
     if (yreg > hb) {
         yreg = hb;
     }
     return;
 }
 void IPCA(m1op) {
-    std::cin >> strin;
-    areg = strin.length();
+    fgets(strin, 255, stdin);
+    for (areg = 0; strin[xreg] != NULL; xreg++) {
+
+    }
     if (areg > hb) {
         areg = hb;
     }
     return;
 }
 void NLXS(m2op) {
-    std::cout << std::endl;
+    printf("\n");
     for(uint8_t i=0; i < xreg; i++) {
-        std::cout << (char)memory[m16 + i];
+        printf("%c", memory[m16 + i]);
     }
-    std::cout << std::endl;
     return;
 }
 void NLYS(m2op) {
-    std::cout << std::endl;
+    printf("\n");
     for(uint8_t i=0; i < yreg; i++) {
-        std::cout << (char)memory[m16 + i];
+        printf("%c", memory[m16 + i]);
     }
-    std::cout << std::endl;
     return;
 }
 void NLAS(m2op) {
-    std::cout << std::endl;
+    printf("\n");
     for(uint8_t i=0; i < areg; i++) {
-        std::cout << (char)memory[m16 + i];
+        printf("%c", memory[m16 + i]);
     }
-    std::cout << std::endl;
     return;
 }
 void SDL1(m1op) {
-    diska.seekg(hb * 8192, std::ios::beg);
-    diska.read(reinterpret_cast<char*>(&memory[32768]), 16384);
+    fseek(diska, (int)hb * 8192, SEEK_SET);
+    fread(&memory[32768], sizeof(uint8_t), 16384 * sizeof(uint8_t), diska);
     return;
 }
 void SDL2(m1op) {
-    diska.seekg(hb * 8192, std::ios::beg);
-    diska.read(reinterpret_cast<char*>(&memory[40960]), 16384);
+    fseek(diska, (int)hb * 8192, SEEK_SET);
+    fread(&memory[40960], sizeof(uint8_t), 16384 * sizeof(uint8_t), diska);
     return;
 }
 void SDL3(m1op) {
-    diska.seekg(hb * 8192, std::ios::beg);
-    diska.read(reinterpret_cast<char*>(&memory[49152]), 16384);
+    fseek(diska, (int)hb * 8192, SEEK_SET);
+    fread(&memory[49152], sizeof(uint8_t), 16384 * sizeof(uint8_t), diska);
     return;
 }
 void SDLB(m1op) {
-    diskb.seekg(hb * 8192, std::ios::beg);
-    diskb.read(reinterpret_cast<char*>(&memory[16384]), 16384);
+    fseek(diskb, (int)hb * 8192, SEEK_SET);
+    fread(&memory[16384], sizeof(uint8_t), 16384 * sizeof(uint8_t), diskb);
     return;
 }
 void SDSB(m1op) {
     if (hb > 14) {
          return;
     }
-//    std::cout << "wrote to disk B" << std::endl;
-    diskb.seekp(hb * 8192, std::ios::beg);
-    diskb.write(reinterpret_cast<const char*>(&memory[16384]), 16384);
-    diskb.flush();
+    fseek(diskb, (int)hb * 8192, SEEK_SET);
+    fwrite(memory + 16384, 1, 16384, diskb);
+    fflush(diskb);
     return;
 }
 void DMPA() {
     for(int i = 0; i < 4; i++) {
-        std::cout << das[i];
+        printf("%i ", das[i]);
     }
-    std::cout << std::endl;
+    printf("\n");
     return;
 }
 void DMPB() {
-    std::cout << dbs[0];
-    std::cout << dbs[1];
-    std::cout << std::endl;
+    printf("%i %i\n", dbs[0], dbs[1]);
     return;
 }
 void JMPF(m1op) {
@@ -660,7 +652,7 @@ void CAIN(m1op) {
     return;
 }
 void PRTN(m1op) {
-    std::cout << (int)hb;
+    printf("%i", hb);
     return;
 }
 void ICRD() {

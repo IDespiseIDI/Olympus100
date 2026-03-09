@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 uint8_t firmware[] = {
-    2, 0, 237, // JMP &mn
+    2, 0, 238, // JMP &mn
     //Strings
     79, 108, 121, 109, 112, 117, 115, 32, 49, 48, 48, //"Olympus 100" starting at 0003
     69, 114, 114, 111, 114, 33, 32,                 //"Error!
@@ -77,7 +77,7 @@ uint8_t firmware[] = {
     2, 0, 202, //JMP &dc
     7, 2, //ADDX 02
     2, 0, 208, //JMP &cs
-    //mn=*00EB
+    //mn=*00EE
     6, 11, //SETX 0A
     54, 0, 3, //PRTX 0003
     62, 0, //DBL1 00
@@ -90,6 +90,7 @@ uint8_t firmware[] = {
     2, 0, 147, //JMP &rn
     6, 76, //SETX 4C
     110, 0, 49, //NLXS 0031
+    57, //PRTB
     106, 4, //IPCX 04
     50, 63, 252, //RDLX 3FFC
     136, 63, 252, //SETD 3FFC

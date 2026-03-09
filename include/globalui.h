@@ -1,4 +1,2 @@
 #pragma once
-#include <iostream>
-#include <string>
-std::string strin; //STRing INput. Looked better in my head.
+char strin[255]; //STRing INput. Looked better in my head.

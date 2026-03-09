@@ -1,3 +1,4 @@
 #pragma once
+#include <stdlib.h>
 #include "globalram.h"
-uint8_t memory[65536];
+uint8_t *memory;
