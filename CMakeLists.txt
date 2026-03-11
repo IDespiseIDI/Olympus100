@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(Olympus100 VERSION 2.0.1)
+project(Olympus100 VERSION 3.0.0)
 
 set(SOURCE_FILES src/cpu/opcode.c src/fw/main.c src/ram/ram.c src/disk/disk.c
 )
