@@ -1,71 +1,72 @@
 #include "cpu.h"
-#include "globalcpu.h"
 #include "globalram.h"
 #include "globalui.h"
 #include "globaldisk.h"
 #include <stdio.h>
-// #define TRACE
-void NOP() {
-    return;
-}
+#include <string.h>
+
+uint8_t das[4]; //disk a sectors loaded
+uint8_t dbs[2]; //disk b sectors loaded
+
+
 void QITZ() {
     quit = 1;
     return;
 }
-void QITE(m1op) {
-    printf("\nAn unhandled exception has occured. \n Error: %i \n", hb);
+void QITE() {
+    printf("\nAn unhandled exception has occured. \n Error: %i \n", *(pcounter+1));
     quit = 1;
     return;
 }
-void JMP(m2op) {
-    pcounter = (hb * 256) + lb;
+void JMP() {
+    pcounter = *memaddr + memory;
     return;
 }
-void JSR(m2op) {
-    mcs = pcounter + 3;
+void JSR() {
+    *stackpointer = (pcounter-memory) + 3;
     stackpointer++;
-    pcounter = (hb * 256) + lb;
+    pcounter = *memaddr + memory;
     return;
 }
-void ABA(m2op) {
+void ABA() {
     stackpointer--;
-    mcs = 0;
-    pcounter = (hb * 256) + lb;
+    *stackpointer = 0;
+    pcounter = *memaddr + memory;
     return;
 }
 void RET() {
     stackpointer--;
-    pcounter = mcs;
-    mcs = 0;
+    pcounter = *stackpointer + memory;
+    *stackpointer = 0;
     return;
 }
-void SETX(m1op) {
-    xreg = hb;
+void SETX() {
+    xreg = *(pcounter+1);
     return;
 }
-void ADDX(m1op) {
-    xreg += hb;
+void ADDX() {
+    xreg += *(pcounter+1);
     return;
 }
-void SUBX(m1op) {
-    xreg -= hb;
+void SUBX() {
+    xreg -= *(pcounter+1);
     return;
 }
-void WRTX(m2op) {
-    memory[m16] = xreg;
+void WRTX() {
+    memory[*memaddr] = xreg;
 }
-void REDX(m2op) {
-    xreg = memory[m16];
+void REDX() {
+    xreg = memory[*memaddr];
     return;
 }
-void CHXE(m2op) {
-    if(xreg != memory[m16]) {
+void CHXE() {
+    if(xreg != memory[*memaddr]) {
         pcounter += 3;
     }
     return;
 }
-void CHXI(m2op) {
-    if(xreg < memory[m16]) {
+void CHXI() {
+    if(xreg < memory[*memaddr]) {
         pcounter += 3;
     }
     return;
@@ -74,34 +75,34 @@ void LODX() {
     lreg = &xreg;
     return;
 }
-void SETY(m1op) {
-    yreg = hb;
+void SETY() {
+    yreg = *(pcounter+1);
     return;
 }
-void ADDY(m1op) {
-    yreg += hb;
+void ADDY() {
+    yreg += *(pcounter+1);
     return;
 }
-void SUBY(m1op) {
-    yreg -= hb;
+void SUBY() {
+    yreg -= *(pcounter+1);
     return;
 }
-void WRTY(m2op) {
-    memory[m16] = yreg;
+void WRTY() {
+    memory[*memaddr] = yreg;
     return;
 }
-void REDY(m2op) {
-    yreg = memory[m16];
+void REDY() {
+    yreg = memory[*memaddr];
     return;
 }
-void CHYE(m2op) {
-    if(yreg != memory[m16]) {
+void CHYE() {
+    if(yreg != memory[*memaddr]) {
         pcounter += 3;
     }
     return;
 }
-void CHYI(m2op) {
-    if(yreg < memory[m16]) {
+void CHYI() {
+    if(yreg < memory[*memaddr]) {
         pcounter += 3;
     }
     return;
@@ -110,34 +111,34 @@ void LODY() {
     lreg = &yreg;
     return;
 }
-void SETA(m1op) {
-    areg = hb;
+void SETA() {
+    areg = *(pcounter+1);
     return;
 }
-void ADDA(m1op) {
-    areg += hb;
+void ADDA() {
+    areg += *(pcounter+1);
     return;
 }
-void SUBA(m1op) {
-    areg -= hb;
+void SUBA() {
+    areg -= *(pcounter+1);
     return;
 }
-void WRTA(m2op) {
-    memory[m16] = areg;
+void WRTA() {
+    memory[*memaddr] = areg;
     return;
 }
-void REDA(m2op) {
-    areg = memory[m16];
+void REDA() {
+    areg = memory[*memaddr];
     return;
 }
-void CHAE(m2op) {
-    if(areg != memory[m16]) {
+void CHAE() {
+    if(areg != memory[*memaddr]) {
         pcounter += 3;
     }
     return;
 }
-void CHAI(m2op) {
-    if(areg < memory[m16]) {
+void CHAI() {
+    if(areg < memory[*memaddr]) {
         pcounter += 3;
     }
     return;
@@ -195,24 +196,24 @@ void YIQA() {
     return;
 }
 void XSWY() {
-    mcs = xreg;
+    *stackpointer = xreg;
     xreg = yreg;
-    yreg = mcs;
-    mcs = 0;
+    yreg = *stackpointer;
+    *stackpointer = 0;
     return; //Use the stack to swap register values! Is that clever or what? The current stack position should be 0 between opcodes anyway.
 }
 void XSWA() {
-    mcs = xreg;
+    *stackpointer = xreg;
     xreg = areg;
-    areg = mcs;
-    mcs = 0;
+    areg = *stackpointer;
+    *stackpointer = 0;
     return;
 }
 void YSWA() {
-    mcs = yreg;
+    *stackpointer = yreg;
     yreg = areg;
-    areg = mcs;
-    mcs = 0;
+    areg = *stackpointer;
+    *stackpointer = 0;
     return;
 }
 void YIQX() {
@@ -256,39 +257,39 @@ void UTLA() {
     }
     return;
 }
-void RDLX(m2op) {
+void RDLX() {
     for(uint8_t i=0; i < xreg; i++) {
-        memory[m16 + i] = (uint8_t)strin[i];
+        memory[*memaddr + i] = (uint8_t)strin[i];
     }
     return;
 }
-void RDLY(m2op) {
+void RDLY() {
     for(uint8_t i=0; i < yreg; i++) {
-        memory[m16 + i] = (uint8_t)strin[i];
+        memory[*memaddr + i] = (uint8_t)strin[i];
     }
     return;
 }
-void RDLA(m2op) {
+void RDLA() {
     for(uint8_t i=0; i < areg; i++) {
-        memory[m16 + i] = (uint8_t)strin[i];
+        memory[*memaddr + i] = (uint8_t)strin[i];
     }
     return;
 }
-void PRTX(m2op) {
+void PRTX() {
     for(uint8_t i=0; i < xreg; i++) {
-        printf("%c", memory[m16 + i]);
+        printf("%c", memory[*memaddr + i]);
     }
     return;
 }
-void PRTY(m2op) {
+void PRTY() {
     for(uint8_t i=0; i < yreg; i++) {
-        printf("%c", memory[m16 + i]);
+        printf("%c", memory[*memaddr + i]);
     }
     return;
 }
-void PRTA(m2op) {
+void PRTA() {
     for(uint8_t i=0; i < areg; i++) {
-        printf("%c", memory[m16 + i]);
+        printf("%c", memory[*memaddr + i]);
     }
     return;
 }
@@ -296,66 +297,66 @@ void PRTB() {
     printf("\n");
     return;
 }
-void DAL1(m1op) {
-    fseek(diska, (int)hb * 8192, SEEK_SET);
+void DAL1() {
+    fseek(diska, (int)*(pcounter+1) * 8192, SEEK_SET);
     fread(&memory[32768], sizeof(uint8_t), 8192 * sizeof(uint8_t), diska);
-    das[0] = hb;
+    das[0] = *(pcounter+1);
     return;
 }
-void DAL2(m1op) {
-    fseek(diska, (int)hb * 8192, SEEK_SET);
+void DAL2() {
+    fseek(diska, (int)*(pcounter+1) * 8192, SEEK_SET);
     fread(&memory[40960], sizeof(uint8_t), 8192 * sizeof(uint8_t), diska);
-    das[1] = hb;
+    das[1] = *(pcounter+1);
     return;
 }
-void DAL3(m1op) {
-    fseek(diska, (int)hb * 8192, SEEK_SET);
+void DAL3() {
+    fseek(diska, (int)*(pcounter+1) * 8192, SEEK_SET);
     fread(&memory[49152], sizeof(uint8_t), 8192 * sizeof(uint8_t), diska);
-    das[2] = hb;
+    das[2] = *(pcounter+1);
     return;
 }
-void DAL4(m1op) {
-    fseek(diska, (int)hb * 8192, SEEK_SET);
+void DAL4() {
+    fseek(diska, (int)*(pcounter+1) * 8192, SEEK_SET);
     fread(&memory[57344], sizeof(uint8_t), 8192 * sizeof(uint8_t), diska);
-    das[3] = hb;
+    das[3] = *(pcounter+1);
     return;
 }
-void DBL1(m1op) {
-    fseek(diskb, (int)hb * 8192, SEEK_SET);
+void DBL1() {
+    fseek(diskb, (int)*(pcounter+1) * 8192, SEEK_SET);
     fread(&memory[16384], sizeof(uint8_t), 8192 * sizeof(uint8_t), diskb);
-    dbs[0] = hb;
+    dbs[0] = *(pcounter+1);
     return;
 }
-void DBL2(m1op) {
-    fseek(diskb, (int)hb * 8192, SEEK_SET);
+void DBL2() {
+    fseek(diskb, (int)*(pcounter+1) * 8192, SEEK_SET);
     fread(&memory[24576], sizeof(uint8_t), 8192 * sizeof(uint8_t), diskb);
-    dbs[1] = hb;
+    dbs[1] = *(pcounter+1);
     return;
 }
-void DBS1(m1op) {
-    if (hb > 15) return;
-    fseek(diskb, (int)hb * 8192, SEEK_SET);
+void DBS1() {
+    if (*(pcounter+1) > 15) return;
+    fseek(diskb, (int)*(pcounter+1) * 8192, SEEK_SET);
     fwrite(memory + 16384, 1, 8192, diskb);
     fflush(diskb);
     return;
 }
-void DBS2(m1op) {
-    if (hb > 15) return;
-    fseek(diskb, (int)hb * 8192, SEEK_SET);
+void DBS2() {
+    if (*(pcounter+1) > 15) return;
+    fseek(diskb, (int)*(pcounter+1) * 8192, SEEK_SET);
     fwrite(memory + 24576, 1, 8192, diskb);
     fflush(diskb);
     return;
 }
-void DMPM(m2op) {
+void DMPM() {
     for (int i = 0; i < 256; i++) {
-        printf("%i", memory[m16 + i]);
+        printf("%i", memory[*memaddr + i]);
     }
     printf("\n");
     return;
 }
 void DMPI() {
     for (int i = 0; i < 256; i++) {
-        printf("%i", memory[pcounter - 256 + i]);
+        printf("%i", *(pcounter - 256 + i));
     }
     printf("\n");
     return;
@@ -368,29 +369,29 @@ void DMPS() {
     return;
 }
 void DMPV() {
-    printf("%i %i %i %i %i %i", xreg, yreg, areg, *lreg, stackpointer, pcounter);
+    printf("%i %i %i %i %i %i", xreg, yreg, areg, *lreg, *stackpointer, *pcounter);
     printf("\n");
     return;
 }
-void ADDS(m2op) {
-    mcs = m16;
+void ADDS() {
+    *stackpointer = *memaddr;
     stackpointer++;
     return;
 }
-void SETS(m1op) {
-    stackpointer = hb;
+void SETS() {
+    stackpointer = *(pcounter+1);
     return;
 }
-void SXIN(m2op) {
-    stack[xreg] = m16;
+void SXIN() {
+    stack[xreg] = *memaddr;
     return;
 }
-void SYIN(m2op) {
-    stack[yreg] = m16;
+void SYIN() {
+    stack[yreg] = *memaddr;
     return;
 }
-void SAIN(m2op) {
-    stack[areg] = m16;
+void SAIN() {
+    stack[areg] = *memaddr;
     return;
 }
 void STKX() {
@@ -413,12 +414,12 @@ void DCRX() {
     xreg--;
     return;
 }
-void INCX(m2op) {
-    xreg += memory[m16];
+void INCX() {
+    xreg += memory[*memaddr];
     return;
 }
-void DECX(m2op) {
-    xreg -= memory[m16];
+void DECX() {
+    xreg -= memory[*memaddr];
     return;
 }
 void ICRY() {
@@ -429,12 +430,12 @@ void DCRY() {
     yreg--;
     return;
 }
-void INCY(m2op) {
-    yreg += memory[m16];
+void INCY() {
+    yreg += memory[*memaddr];
     return;
 }
-void DECY(m2op) {
-    yreg -= memory[m16];
+void DECY() {
+    yreg -= memory[*memaddr];
     return;
 }
 void ICRA() {
@@ -445,12 +446,12 @@ void DCRA() {
     areg--;
     return;
 }
-void INCA(m2op) {
-    areg += memory[m16];
+void INCA() {
+    areg += memory[*memaddr];
     return;
 }
-void DECA(m2op) {
-    areg -= memory[m16];
+void DECA() {
+    areg -= memory[*memaddr];
     return;
 }
 void XADY() {
@@ -516,82 +517,82 @@ void ALLA() {
     yreg = areg;
     return;
 }
-void IPCX(m1op) {
+void IPCX() {
     fgets(strin, 255, stdin);
     for (xreg = 0; strin[xreg] != NULL; xreg++) {
 
     }
-    if (xreg > hb) {
-        xreg = hb;
+    if (xreg > *(pcounter+1)) {
+        xreg = *(pcounter+1);
     }
     return;
 }
-void IPCY(m1op) {
+void IPCY() {
     fgets(strin, 255, stdin);
     for (yreg = 0; strin[xreg] != NULL; xreg++) {
 
     }
-    if (yreg > hb) {
-        yreg = hb;
+    if (yreg > *(pcounter+1)) {
+        yreg = *(pcounter+1);
     }
     return;
 }
-void IPCA(m1op) {
+void IPCA() {
     fgets(strin, 255, stdin);
     for (areg = 0; strin[xreg] != NULL; xreg++) {
 
     }
-    if (areg > hb) {
-        areg = hb;
+    if (areg > *(pcounter+1)) {
+        areg = *(pcounter+1);
     }
     return;
 }
-void NLXS(m2op) {
+void NLXS() {
     printf("\n");
     for(uint8_t i=0; i < xreg; i++) {
-        printf("%c", memory[m16 + i]);
+        printf("%c", memory[*memaddr + i]);
     }
     return;
 }
-void NLYS(m2op) {
+void NLYS() {
     printf("\n");
     for(uint8_t i=0; i < yreg; i++) {
-        printf("%c", memory[m16 + i]);
+        printf("%c", memory[*memaddr + i]);
     }
     return;
 }
-void NLAS(m2op) {
+void NLAS() {
     printf("\n");
     for(uint8_t i=0; i < areg; i++) {
-        printf("%c", memory[m16 + i]);
+        printf("%c", memory[*memaddr + i]);
     }
     return;
 }
-void SDL1(m1op) {
-    fseek(diska, (int)hb * 8192, SEEK_SET);
+void SDL1() {
+    fseek(diska, (int)*(pcounter+1) * 8192, SEEK_SET);
     fread(&memory[32768], sizeof(uint8_t), 16384 * sizeof(uint8_t), diska);
     return;
 }
-void SDL2(m1op) {
-    fseek(diska, (int)hb * 8192, SEEK_SET);
+void SDL2() {
+    fseek(diska, (int)*(pcounter+1) * 8192, SEEK_SET);
     fread(&memory[40960], sizeof(uint8_t), 16384 * sizeof(uint8_t), diska);
     return;
 }
-void SDL3(m1op) {
-    fseek(diska, (int)hb * 8192, SEEK_SET);
+void SDL3() {
+    fseek(diska, (int)*(pcounter+1) * 8192, SEEK_SET);
     fread(&memory[49152], sizeof(uint8_t), 16384 * sizeof(uint8_t), diska);
     return;
 }
-void SDLB(m1op) {
-    fseek(diskb, (int)hb * 8192, SEEK_SET);
+void SDLB() {
+    fseek(diskb, (int)*(pcounter+1) * 8192, SEEK_SET);
     fread(&memory[16384], sizeof(uint8_t), 16384 * sizeof(uint8_t), diskb);
     return;
 }
-void SDSB(m1op) {
-    if (hb > 14) {
+void SDSB() {
+    if (*(pcounter+1) > 14) {
          return;
     }
-    fseek(diskb, (int)hb * 8192, SEEK_SET);
+    fseek(diskb, (int)*(pcounter+1) * 8192, SEEK_SET);
     fwrite(memory + 16384, 1, 16384, diskb);
     fflush(diskb);
     return;
@@ -607,52 +608,52 @@ void DMPB() {
     printf("%i %i\n", dbs[0], dbs[1]);
     return;
 }
-void JMPF(m1op) {
-    pcounter += hb;
+void JMPF() {
+    pcounter += *(pcounter+1);
     return;
 }
-void JMPB(m1op) {
-    pcounter -= hb;
+void JMPB() {
+    pcounter -= *(pcounter+1);
     return;
 }
-void CXEN(m1op) {
-    if (xreg != hb) {
+void CXEN() {
+    if (xreg != *(pcounter+1)) {
         pcounter += 3;
     }
     return;
 }
-void CXIN(m1op) {
-    if (xreg < hb) {
+void CXIN() {
+    if (xreg < *(pcounter+1)) {
         pcounter += 3;
     }
     return;
 }
-void CYEN(m1op) {
-    if (yreg != hb) {
+void CYEN() {
+    if (yreg != *(pcounter+1)) {
         pcounter += 3;
     }
     return;
 }
-void CYIN(m1op) {
-    if (yreg < hb) {
+void CYIN() {
+    if (yreg < *(pcounter+1)) {
         pcounter += 3;
     }
     return;
 }
-void CAEN(m1op) {
-    if (areg != hb) {
+void CAEN() {
+    if (areg != *(pcounter+1)) {
         pcounter += 3;
     }
     return;
 }
-void CAIN(m1op) {
-    if (areg < hb) {
+void CAIN() {
+    if (areg < *(pcounter+1)) {
         pcounter += 3;
     }
     return;
 }
-void PRTN(m1op) {
-    printf("%i", hb);
+void PRTN() {
+    printf("%i", *(pcounter+1));
     return;
 }
 void ICRD() {
@@ -663,16 +664,16 @@ void DCRD() {
     dp--;
     return;
 }
-void INCD(m1op) {
-    dp += hb;
+void INCD() {
+    dp += *(pcounter+1);
     return;
 }
-void DECD(m1op) {
-    dp -= hb;
+void DECD() {
+    dp -= *(pcounter+1);
     return;
 }
-void SETD(m2op) {
-    dp = 256 * (uint16_t)hb + (uint16_t)lb;
+void SETD() {
+    dp = memory + *memaddr;
     return;
 }
 void ZERD() {
@@ -710,205 +711,191 @@ void DCDL() {
     dp += *lreg;
 }
 void DSXX() {
-    dp = 256 * (uint16_t)xreg + (uint16_t)xreg;
+    dp = 256 * (uint16_t)xreg + (uint16_t)xreg + memory;
     return;
 }
 void DSXY() {
-    dp = 256 * (uint16_t)xreg + (uint16_t)yreg;
+    dp = 256 * (uint16_t)xreg + (uint16_t)yreg + memory;
     return;
 }
 void DSXA() {
-    dp = 256 * (uint16_t)xreg + (uint16_t)areg;
+    dp = 256 * (uint16_t)xreg + (uint16_t)areg + memory;
     return;
 }
 void DSXL() {
-    dp = 256 * (uint16_t)xreg + (uint16_t)*lreg;
+    dp = 256 * (uint16_t)xreg + (uint16_t)*lreg + memory;
     return;
 }
 void DSYX() {
-    dp = 256 * (uint16_t)yreg + (uint16_t)xreg;
+    dp = 256 * (uint16_t)yreg + (uint16_t)xreg + memory;
     return;
 }
 void DSYY() {
-    dp = 256 * (uint16_t)yreg + (uint16_t)yreg;
+    dp = 256 * (uint16_t)yreg + (uint16_t)yreg + memory;
     return;
 }
 void DSYA() {
-    dp = 256 * (uint16_t)yreg + (uint16_t)areg;
+    dp = 256 * (uint16_t)yreg + (uint16_t)areg + memory;
     return;
 }
 void DSYL() {
-    dp = 256 * (uint16_t)yreg + (uint16_t)*lreg;
+    dp = 256 * (uint16_t)yreg + (uint16_t)*lreg + memory;
     return;
 }
 void DSAX() {
-    dp = 256 * (uint16_t)areg + (uint16_t)xreg;
+    dp = 256 * (uint16_t)areg + (uint16_t)xreg + memory;
     return;
 }
 void DSAY() {
-    dp = 256 * (uint16_t)areg + (uint16_t)yreg;
+    dp = 256 * (uint16_t)areg + (uint16_t)yreg + memory;
     return;
 }
 void DSAA() {
-    dp = 256 * (uint16_t)areg + (uint16_t)areg;
+    dp = 256 * (uint16_t)areg + (uint16_t)areg + memory;
     return;
 }
 void DSAL() {
-    dp = 256 * (uint16_t)areg + (uint16_t)*lreg;
+    dp = 256 * (uint16_t)areg + (uint16_t)*lreg + memory;
     return;
 }
 void DSLX() {
-    dp = 256 * (uint16_t)*lreg + (uint16_t)xreg;
+    dp = 256 * (uint16_t)*lreg + (uint16_t)xreg + memory;
     return;
 }
 void DSLY() {
-    dp = 256 * (uint16_t)*lreg + (uint16_t)yreg;
+    dp = 256 * (uint16_t)*lreg + (uint16_t)yreg + memory;
     return;
 }
 void DSLA() {
-    dp = 256 * (uint16_t)*lreg + (uint16_t)areg;
+    dp = 256 * (uint16_t)*lreg + (uint16_t)areg + memory;
     return;
 }
 void DSLL() {
-    dp = 256 * (uint16_t)*lreg + (uint16_t)*lreg;
+    dp = 256 * (uint16_t)*lreg + (uint16_t)*lreg + memory;
     return;
 }
 void DTOX() {
-    memory[dp] = xreg;
+    *dp = xreg;
     return;
 }
 void XTOD() {
-    xreg = memory[dp];
+    xreg = *dp;
     return;
 }
 void DTOY() {
-    memory[dp] = yreg;
+    *dp = yreg;
     return;
 }
 void YTOD() {
-    yreg = memory[dp];
+    yreg = *dp;
     return;
 }
 void DTOA() {
-    memory[dp] = areg;
+    *dp = areg;
     return;
 }
 void ATOD() {
-    areg = memory[dp];
+    areg = *dp;
     return;
 }
 void DTOL() {
-    memory[dp] = *lreg;
+    *dp = *lreg;
     return;
 }
 void LTOD() {
-    *lreg = memory[dp];
+    *lreg = *dp;
     return;
 }
-void DTSV(m1op) {
-    memory[dp] = hb;
+void DTSV() {
+    *dp = *(pcounter+1);
     return;
 }
 void DTSZ() {
-    memory[dp] = 0;
+    *dp = 0;
     return;
 }
-void SETL(m1op) {
-    *lreg = hb;
+void SETL() {
+    *lreg = *(pcounter+1);
     return;
 }
-void ADDL(m1op) {
-    *lreg += hb;
+void ADDL() {
+    *lreg += *(pcounter+1);
     return;
 }
-void SUBL(m1op) {
-    *lreg -= hb;
+void SUBL() {
+    *lreg -= *(pcounter+1);
     return;
 }
-void WRTL(m2op) {
-    memory[m16] = *lreg;
+void WRTL() {
+    memory[*memaddr] = *lreg;
 }
-void REDL(m2op) {
-    *lreg = memory[m16];
+void REDL() {
+    *lreg = memory[*memaddr];
     return;
 }
-void CHLE(m2op) {
-    if(*lreg != memory[m16]) {
+void CHLE() {
+    if(*lreg != memory[*memaddr]) {
         pcounter += 3;
     }
     return;
 }
-void CHLI(m2op) {
-    if(*lreg < memory[m16]) {
+void CHLI() {
+    if(*lreg < memory[*memaddr]) {
         pcounter += 3;
     }
     return;
 }
-void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) { 
-#ifdef TRACE
-    std::cout << "REGDEB: " << (int)xreg << " " << (int)yreg << " " << (int)areg << std::endl; 
-    std::cout << "DISKA: ";
-    for (int i = 0; i < 8; i++) {
-        std::cout << (int)memory[32768 + i] << " ";
-    }
-    std::cout << std::endl;
-    std::cout << "DISKB: ";
-    for (int i = 0; i < 8; i++) {
-        std::cout << (int)memory[16384 + i] << " ";
-    }
-    std::cout << std::endl;
-    std::cout << "DEBUG: " << static_cast<int>(code) << " " << static_cast<int>(arg1) << " " << static_cast<int>(arg2) << std::endl;
-#endif
-
-    switch (code) {
+void NOP() {
+    return;
+}
+void opcode() { 
+    memaddr = pcounter + 1;
+    switch (*pcounter) {
         case 0:
             QITZ();
             break;
         case 1:
-            QITE(arg1);
+            QITE();
             break;
         case 2:
-            JMP(arg1, arg2);
+            JMP();
 // jump instructions do not update the program counter. that's just bad practice
             break;
         case 3:
-            JSR(arg1, arg2);
+            JSR();
             break;
         case 4:
-            ABA(arg1, arg2);
+            ABA();
             break;
         case 5:
             RET();
             break;
         case 6:
-            SETX(arg1);
+            SETX();
             pcounter += 2;
             break;
         case 7:
-            ADDX(arg1);
+            ADDX();
             pcounter += 2;
             break;
         case 8:
-            SUBX(arg1);
+            SUBX();
             pcounter += 2;
             break;
         case 9:
-            WRTX(arg1, arg2);
-            #ifdef TRACE
-            std::cout << "DEBUG: X=" << (int)xreg << " written to address " << 256 * (int)arg1 + (int)arg2 << std::endl;
-            #endif
+            WRTX();
             pcounter += 3;
             break;
         case 10:
-            REDX(arg1, arg2);
+            REDX();
             pcounter += 3;
             break;
         case 11:
-            CHXE(arg1, arg2);
+            CHXE();
             pcounter += 3;
             break;
         case 12:
-            CHXI(arg1, arg2);
+            CHXI();
             pcounter += 3;
             break;
         case 13:
@@ -916,31 +903,31 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 14:
-            SETY(arg1);
+            SETY();
             pcounter += 2;
             break;
         case 15:
-            ADDY(arg1);
+            ADDY();
             pcounter += 2;
             break;
         case 16:
-            SUBY(arg1);
+            SUBY();
             pcounter += 2;
             break;
         case 17:
-            WRTY(arg1, arg2);
+            WRTY();
             pcounter += 3;
             break;
         case 18:
-            REDY(arg1, arg2);
+            REDY();
             pcounter += 3;
             break;
         case 19:
-            CHYE(arg1, arg2);
+            CHYE();
             pcounter += 3;
             break;
         case 20:
-            CHYI(arg1, arg2);
+            CHYI();
             pcounter += 3;
             break;
         case 21:
@@ -948,31 +935,31 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 22:
-            SETA(arg1);
+            SETA();
             pcounter += 2;
             break;
         case 23:
-            ADDA(arg1);
+            ADDA();
             pcounter += 2;
             break;
         case 24:
-            SUBA(arg1);
+            SUBA();
             pcounter += 2;
             break;
         case 25:
-            WRTA(arg1, arg2);
+            WRTA();
             pcounter += 3;
             break;
         case 26:
-            REDA(arg1, arg2);
+            REDA();
             pcounter += 3;
             break;
         case 27:
-            CHAE(arg1, arg2);
+            CHAE();
             pcounter += 3;
             break;
         case 28:
-            CHAI(arg1, arg2);
+            CHAI();
             pcounter += 3;
             break;
         case 29:
@@ -1056,27 +1043,27 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 50:
-            RDLX(arg1, arg2);
+            RDLX();
             pcounter += 3;
             break;
         case 51:
-            RDLY(arg1, arg2);
+            RDLY();
             pcounter += 3;
             break;
         case 52:
-            RDLA(arg1, arg2);
+            RDLA();
             pcounter += 3;
             break;
         case 54:
-            PRTX(arg1, arg2);
+            PRTX();
             pcounter += 3;
             break;
         case 55:
-            PRTY(arg1, arg2);
+            PRTY();
             pcounter += 3;
             break;
         case 56:
-            PRTA(arg1, arg2);
+            PRTA();
             pcounter += 3;
             break;
         case 57:
@@ -1084,39 +1071,39 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 58:
-            DAL1(arg1);
+            DAL1();
             pcounter += 2;
             break;
         case 59:
-            DAL2(arg1);
+            DAL2();
             pcounter += 2;
             break;
         case 60:
-            DAL3(arg1);
+            DAL3();
             pcounter += 2;
             break;
         case 61:
-            DAL4(arg1);
+            DAL4();
             pcounter += 2;
             break;
         case 62:
-            DBL1(arg1);
+            DBL1();
             pcounter += 2;
             break;
         case 63:
-            DBL2(arg1);
+            DBL2();
             pcounter += 2;
             break;
         case 64:
-            DBS1(arg1);
+            DBS1();
             pcounter += 2;
             break;
         case 65:
-            DBS2(arg1);
+            DBS2();
             pcounter += 2;
             break;
         case 66:
-            DMPM(arg1, arg2);
+            DMPM();
             pcounter += 3;
             break;
         case 67:
@@ -1132,23 +1119,23 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 70:
-            ADDS(arg1, arg2);
+            ADDS();
             pcounter += 3;
             break;
         case 71:
-            SETS(arg1);
+            SETS();
             pcounter += 2;
             break;
         case 72:
-            SXIN(arg1, arg2);
+            SXIN();
             pcounter += 3;
             break;
         case 73:
-            SYIN(arg1, arg2);
+            SYIN();
             pcounter += 3;
             break;  
         case 74:
-            SAIN(arg1, arg2);
+            SAIN();
             pcounter += 3;
             break;
         case 75:
@@ -1172,11 +1159,11 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 80:
-            INCX(arg1, arg2);
+            INCX();
             pcounter += 3;
             break;
         case 81:
-            DECX(arg1, arg2);
+            DECX();
             pcounter += 3;
             break;
         case 82:
@@ -1188,11 +1175,11 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 84:
-            INCY(arg1, arg2);
+            INCY();
             pcounter += 3;
             break;
         case 85:
-            DECY(arg1, arg2);
+            DECY();
             pcounter += 3;
             break;
         case 86:
@@ -1204,11 +1191,11 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 88:
-            INCA(arg1, arg2);
+            INCA();
             pcounter += 3;
             break;
         case 89:
-            DECA(arg1, arg2);
+            DECA();
             pcounter += 3;
             break;
         case 90:
@@ -1272,47 +1259,47 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 106:
-            IPCX(arg1);
+            IPCX();
             pcounter += 2;
             break;
         case 107:
-            IPCY(arg1);
+            IPCY();
             pcounter += 2;
             break;
         case 108:
-            IPCA(arg1);
+            IPCA();
             pcounter += 2;
             break;
         case 110:
-            NLXS(arg1, arg2);
+            NLXS();
             pcounter += 3;
             break;
         case 111:
-            NLYS(arg1, arg2);
+            NLYS();
             pcounter += 3;
             break;
         case 112:
-            NLAS(arg1, arg2);
+            NLAS();
             pcounter += 3;
             break;
         case 114:
-            SDL1(arg1);
+            SDL1();
             pcounter += 2;
             break;
         case 115:
-            SDL2(arg1);
+            SDL2();
             pcounter += 2;
             break;       
         case 116:
-            SDL3(arg1);
+            SDL3();
             pcounter += 2;
             break;
         case 118:
-            SDLB(arg1);
+            SDLB();
             pcounter += 2;
             break;
         case 119:
-            SDSB(arg1);
+            SDSB();
             pcounter += 2;
             break;
         case 120:
@@ -1324,37 +1311,37 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 122:
-            JMPF(arg1);
+            JMPF();
             break;
         case 123:
-            JMPB(arg1);
+            JMPB();
             break;
         case 124:
-            CXEN(arg1);
+            CXEN();
             pcounter +=2;
             break;
         case 125:
-            CXIN(arg1);
+            CXIN();
             pcounter +=2;
             break;
         case 126:
-            CYEN(arg1);
+            CYEN();
             pcounter +=2;
             break;
         case 127:
-            CYIN(arg1);
+            CYIN();
             pcounter +=2;
             break;
         case 128:
-            CAEN(arg1);
+            CAEN();
             pcounter +=2;
             break;
         case 129:
-            CAIN(arg1);
+            CAIN();
             pcounter +=2;
             break;
         case 130:
-            PRTN(arg1);
+            PRTN();
             pcounter += 2;
             break;
         case 132:
@@ -1366,15 +1353,15 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 134:
-            INCD(arg1);
+            INCD();
             pcounter += 2;
             break;
         case 135:
-            DECD(arg1);
+            DECD();
             pcounter += 2;
             break;
         case 136:
-            SETD(arg1, arg2);
+            SETD();
             pcounter += 3;
             break;
         case 137:
@@ -1510,7 +1497,7 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 170:
-            DTSV(arg1);
+            DTSV();
             pcounter += 2;
             break;
         case 171:
@@ -1518,31 +1505,31 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             pcounter++;
             break;
         case 172:
-            SETL(arg1);
+            SETL();
             pcounter += 2;
             break;
         case 173:
-            ADDL(arg1);
+            ADDL();
             pcounter += 2;
             break;
         case 174:
-            SUBL(arg1);
+            SUBL();
             pcounter += 2;
             break;
         case 175:
-            WRTL(arg1, arg2);
+            WRTL();
             pcounter += 3;
             break;
         case 176:
-            REDL(arg1, arg2);
+            REDL();
             pcounter += 3;
             break;
         case 177:
-            CHLE(arg1, arg2);
+            CHLE();
             pcounter += 3;
             break;
         case 178:
-            CHLI(arg1, arg2);
+            CHLI();
             pcounter += 3;
             break;
         default:
@@ -1551,8 +1538,3 @@ void opcode(uint8_t code, uint8_t arg1, uint8_t arg2) {
             break;
     } 
 }
-
-
-
-
-

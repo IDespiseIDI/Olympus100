@@ -5,10 +5,11 @@
 extern uint8_t xreg; //X register
 extern uint8_t yreg; //Y register
 extern uint8_t areg; //A register
-extern uint16_t stack[256]; //stack
-extern uint16_t pcounter; //program counter
-extern uint8_t stackpointer; //stack pointer doesn't need to be anything greater than 256, it's just function calls, right? ...right?
-extern uint16_t dp;
-extern uint8_t *lreg;
-void opcode(uint8_t code, uint8_t arg1, uint8_t arg2);
+extern uint16_t *stack; //stack
+extern uint8_t* pcounter; //program counter
+extern uint16_t* stackpointer; //stack pointer doesn't need to be anything greater than 256, it's just function calls, right? ...right?
+extern uint8_t* dp; //data pointer
+extern uint8_t *lreg; //loaded register
+extern uint16_t* memaddr; //pointer to streamline getting a memory address instead of casting and addition
+void opcode();
 extern int quit;

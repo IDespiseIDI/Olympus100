@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 uint8_t firmware[] = {
-    2, 0, 238, // JMP &mn
+    2, 238, 0, // JMP &mn
     //Strings
     79, 108, 121, 109, 112, 117, 115, 32, 49, 48, 48, //"Olympus 100" starting at 0003
     69, 114, 114, 111, 114, 33, 32,                 //"Error!
@@ -20,7 +20,7 @@ uint8_t firmware[] = {
     //Functions starting at 008C
     //wp=*008C
     6, 35,  //SETX 23 
-    110, 0, 14, //NLXS 000E
+    110, 14, 0, //NLXS 000E
     1, 1, //QITE 01
     //rn=*0093
     6, 0, //SETX 00
@@ -28,7 +28,7 @@ uint8_t firmware[] = {
     22, 0, //SETA 00
     13, //LODX
     57, //PRTB
-    2, 128, 0, //JMP 8000
+    2, 0, 128, //JMP 8000
     //cc=*009E
     163, //XTOD
     33, //XEQY
@@ -46,15 +46,15 @@ uint8_t firmware[] = {
     5, //RET
     255, 255, //NOP NOP
     86, //ICRA
-    2, 0, 165, //JMP &ca
+    2, 165, 0, //JMP &ca
     //cy=*00B6
     22, 0, //SETA 00
-    3, 0, 165, //JSR &ca
+    3, 165, 0, //JSR &ca
     126, 191, //CYEN BF
     5, //RET
     255, 255, //NOP NOP
     82, //ICRY
-    2, 0, 182, //JMP &cy
+    2, 182, 0, //JMP &cy
     //da=*00C4
     114, 0, //SDL1 sa=*00C5
     5, //RET
@@ -63,50 +63,50 @@ uint8_t firmware[] = {
     5, //RET
     //dc=*00CA
     6, 5, //SETX 05
-    110, 0, 135, //NLXS 0087
+    110, 135, 0, //NLXS 0087
     0, //QITZ
     //cs=*00D0
-    9, 0, 197, //WRTX &sa
-    9, 0, 200, //WRTX &sb
-    3, 0, 196, //JSR &da
+    9, 197, 0, //WRTX &sa
+    9, 200, 0, //WRTX &sb
+    3, 196, 0, //JSR &da
     14, 128, //SETY 80
-    3, 0, 182, //JSR &cy
-    3, 0, 199, //JSR &db
-    10, 0, 197, //REDX &sa
+    3, 182, 0, //JSR &cy
+    3, 199, 0, //JSR &db
+    10, 197, 0, //REDX &sa
     124, 14, //CXEN 0E
-    2, 0, 202, //JMP &dc
+    2, 202, 0, //JMP &dc
     7, 2, //ADDX 02
-    2, 0, 208, //JMP &cs
+    2, 208, 0, //JMP &cs
     //mn=*00EE
     6, 11, //SETX 0A
-    54, 0, 3, //PRTX 0003
+    54, 3, 0, //PRTX 0003
     62, 0, //DBL1 00
-    10, 64, 0, //REDX 4000
+    10, 0, 64, //REDX 4000
     124, 2, //CXEN 02
-    2, 0, 140, //JMP &wp
+    2, 140, 0, //JMP &wp
     58, 0, //DAL1 00
-    10, 128, 0, //REDX 8000
+    10, 0, 128, //REDX 8000
     124, 2, //CXEN 02
-    2, 0, 147, //JMP &rn
+    2, 147, 0, //JMP &rn
     6, 76, //SETX 4C
-    110, 0, 49, //NLXS 0031
+    110, 49, 0, //NLXS 0031
     57, //PRTB
     106, 4, //IPCX 04
-    50, 63, 252, //RDLX 3FFC
-    136, 63, 252, //SETD 3FFC
+    50, 252, 63, //RDLX 3FFC
+    136, 252, 63, //SETD 3FFC
     14, 67, //SETY 43
-    3, 0, 158, //JSR &cc
+    3, 158, 0, //JSR &cc
     132, //ICRD
     14, 79, //SETY 4F
-    3, 0, 158, //JSR &cc
+    3, 158, 0, //JSR &cc
     132, //ICRD
     14, 80, //SETY 50
-    3, 0, 158, //JSR &cc
+    3, 158, 0, //JSR &cc
     132, //ICRD
     14, 89, //SETY 59
-    3, 0, 158, //JSR &cc
+    3, 158, 0, //JSR &cc
     6, 10, //SETX 0A
-    110, 0, 125, //NLXS 007D
+    110, 125, 0, //NLXS 007D
     6, 0, //SETX 00
-    2, 0, 208, //JMP &cs
+    2, 208, 0, //JMP &cs
 };
