@@ -395,15 +395,15 @@ void SAIN() {
     return;
 }
 void STKX() {
-    stackpointer = xreg;
+    stackpointer = xreg + stack;
     return;
 }
 void STKY() {
-    stackpointer = yreg;
+    stackpointer = yreg + stack;
     return;
 }
 void STKA() {
-    stackpointer = areg;
+    stackpointer = areg + stack;
     return;
 }
 void ICRX() {
