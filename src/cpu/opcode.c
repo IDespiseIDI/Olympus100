@@ -246,13 +246,13 @@ void UTLX() {
     return;
 }
 void UTLY() {
-    for (yreg = 0; strin[xreg] != NULL; xreg++) {
+    for (yreg = 0; strin[yreg] != NULL; xreg++) {
 
     }
     return;
 }
 void UTLA() {
-    for (areg = 0; strin[xreg] != NULL; xreg++) {
+    for (areg = 0; strin[areg] != NULL; xreg++) {
 
     }
     return;
